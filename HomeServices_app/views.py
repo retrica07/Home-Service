@@ -583,7 +583,35 @@ class workerviewresponse(LoginRequiredMixin, View):
 
 
 class Viewappointment_history(LoginRequiredMixin, View):
-    pass 
+    login_url = common_lib.DEFAULT_REDIRECT_PATH['ROOT']
+    def get(self, request):
+            # Get the logged-in user's ID
+            user_id = request.user.id
+
+            # Query request data for the logged-in user
+            requests_data = ServiceRequests.objects.filter(user__admin_id=user_id)
+
+            # Initialize lists to store request and response data
+            request_list = []
+            response_list = []
+
+            for request_data in requests_data:
+                # Check if a response exists for the request
+                response = Response.objects.filter(requests=request_data).first()
+
+                if response:
+                    # If a response exists, add it to the response list
+                    response_list.append(response)
+                else:
+                    # If no response exists, add the request to the request list
+                    request_list.append(request_data)
+
+            context = {
+                'requests': request_list,
+                'responses': response_list,
+            }
+
+            return render(request, 'userpages/appointment_history.html', context) 
     
 
 
